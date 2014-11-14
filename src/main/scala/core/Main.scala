@@ -64,13 +64,13 @@ object Main {
   def averageColor(file: File): Color = {
     val image = ImageIO.read(file)
     val raster = image.getRaster
-    val colorArray = new Array[Int](4)
     val pixelAmount = image.getHeight * image.getWidth - 1
-    println(pixelAmount + ", " + pixelAmount % image.getWidth + ", " + pixelAmount / image.getWidth)
+    println(filename + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
+    // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
     val colorList = for (i <- 0 to pixelAmount) yield raster.getPixel(i % image.getWidth, i / image.getWidth, null.asInstanceOf[Array[Int]])
-
+    // sum them all up
     val meanSum = colorList.par.fold(Array[Int](0, 0, 0))((lhs: Array[Int], rhs: Array[Int]) => Array[Int](lhs(0) + rhs(0), lhs(1) + rhs(1), lhs(2) + rhs(2)))
-
+    // calculate the average
     new Color(meanSum(0) / pixelAmount, meanSum(1) / pixelAmount, meanSum(2) / pixelAmount)
   }
 
