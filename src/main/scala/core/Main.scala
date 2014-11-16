@@ -5,7 +5,7 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * Created by Giymo11 on 2014-11-13 at 14:32.
+ * The Class handling everything at the moment.
  */
 object Main {
 
@@ -45,9 +45,8 @@ object Main {
     def isPicture: Boolean = file.getName.endsWith("png") || file.getName.endsWith("jpg")
 
     def isWellNamed: Boolean = {
-      // matches something like [1920x1080]filename.jpg
-      // doesn't match something like [1920x1080][123421]filename.jpg
-      filename.matches("\\[\\d*x\\d*\\][^\\[\\]]*")
+      // matches something like [1920x1080]filename.jpg, doesn't match something like [1920x1080]qwr[1920x1080]filename.jpg
+      filename.matches("\\[\\d*x\\d*\\].*") && !filename.matches("\\[\\d*x\\d*\\].*\\[\\d*x\\d*\\].*")
     }
 
     if (isPicture)
@@ -65,7 +64,7 @@ object Main {
     val image = ImageIO.read(file)
     val raster = image.getRaster
     val pixelAmount = image.getHeight * image.getWidth - 1
-    println(filename + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
+    println(file.getName + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
     // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
     val colorList = for (i <- 0 to pixelAmount) yield raster.getPixel(i % image.getWidth, i / image.getWidth, null.asInstanceOf[Array[Int]])
     // sum them all up
@@ -77,12 +76,11 @@ object Main {
   def renameWithResolution(file: File) = {
     val filename = file.getName
     val image = ImageIO.read(file)
+    val fileParts = filename.split("\\.")
+    val fileEnding = fileParts.last
+    var fileBeginning = fileParts.dropRight(1).mkString(".")
 
-    val fileEnding = filename.split("\\.")(1)
-    var fileBeginning = filename.split("\\.")(0)
-
-    val indexOfBracket = fileBeginning.lastIndexOf(']')
-    if (indexOfBracket != -1) fileBeginning = fileBeginning.substring(indexOfBracket + 1)
+    if (filename.matches(".*\\[\\d*x\\d*\\].*")) fileBeginning = fileBeginning.replaceAll("\\[\\d*x\\d*\\]", "")
 
     val newFilename = "[" + image.getWidth + "x" + image.getHeight + s"]$fileBeginning.$fileEnding"
 
