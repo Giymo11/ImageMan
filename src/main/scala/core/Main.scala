@@ -14,6 +14,7 @@ object Main {
   private val COMMAND_AVERAGE_COLOR = "-a"
 
   def main(args: Array[String]) {
+    // TODO: rewrite the parsing to be more modular and use pattern matching
     //try {
       // minimum arguments
       if (args.length < 2) throw new IllegalAccessException
@@ -33,8 +34,8 @@ object Main {
         if (!file.exists() || file.isDirectory) throw new IllegalArgumentException
         handle(file, args(0))
       }
-    // } catch {
-    //case e: Exception => printHelp(e.getMessage)
+    //} catch {
+    //  case e: Exception => printHelp(e.getMessage)
     //}
   }
 
@@ -56,21 +57,8 @@ object Main {
         else
           println(s"$filename not renamed because already named well")
       else if (command == COMMAND_AVERAGE_COLOR)
-        println(s"Average color for $filename is " + averageColor(file))
+        println(s"Average color for $filename is (new method) " + Image.fromFile(file).averageColor())
       else throw new IllegalArgumentException(command)
-  }
-
-  def averageColor(file: File): Color = {
-    val image = ImageIO.read(file)
-    val raster = image.getRaster
-    val pixelAmount = image.getHeight * image.getWidth - 1
-    println(file.getName + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
-    // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
-    val colorList = for (i <- 0 to pixelAmount) yield raster.getPixel(i % image.getWidth, i / image.getWidth, null.asInstanceOf[Array[Int]])
-    // sum them all up
-    val meanSum = colorList.par.fold(Array[Int](0, 0, 0))((lhs: Array[Int], rhs: Array[Int]) => Array[Int](lhs(0) + rhs(0), lhs(1) + rhs(1), lhs(2) + rhs(2)))
-    // calculate the average
-    new Color(meanSum(0) / pixelAmount, meanSum(1) / pixelAmount, meanSum(2) / pixelAmount)
   }
 
   def renameWithResolution(file: File) = {
@@ -80,12 +68,27 @@ object Main {
     val fileEnding = fileParts.last
     var fileBeginning = fileParts.dropRight(1).mkString(".")
 
-    if (filename.matches(".*\\[\\d*x\\d*\\].*")) fileBeginning = fileBeginning.replaceAll("\\[\\d*x\\d*\\]", "")
-
+    // deletes all resolution tags
+    fileBeginning = fileBeginning.replaceAll("\\[\\d*x\\d*\\]", "")
+    // adds the resolution tag
     val newFilename = "[" + image.getWidth + "x" + image.getHeight + s"]$fileBeginning.$fileEnding"
 
     file.renameTo(new File(file.getParentFile.getPath, newFilename))
     println(s"From $filename to $newFilename")
+  }
+
+  def averageColor(file: File): Color = {
+    // TODO: implement abstraction for the Pixels for better use later on
+    val image = ImageIO.read(file)
+    val raster = image.getRaster
+    val pixelAmount = image.getHeight * image.getWidth - 1
+    // println(file.getName + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
+    // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
+    val colorList = for (i <- 0 to pixelAmount) yield raster.getPixel(i % image.getWidth, i / image.getWidth, null.asInstanceOf[Array[Int]])
+    // sum them all up
+    val meanSum = colorList.par.fold(Array[Int](0, 0, 0))((lhs: Array[Int], rhs: Array[Int]) => Array[Int](lhs(0) + rhs(0), lhs(1) + rhs(1), lhs(2) + rhs(2)))
+    // calculate the average
+    new Color(meanSum(0) / pixelAmount, meanSum(1) / pixelAmount, meanSum(2) / pixelAmount)
   }
 
   def printHelp(message: String) {
