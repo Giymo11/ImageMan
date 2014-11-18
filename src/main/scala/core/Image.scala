@@ -15,16 +15,10 @@ class Image(width: Int, height: Int) {
   def set(x: Int, y: Int, color: RgbColor): Unit = set(x, y, color.red, color.green, color.blue)
 
   def set(x: Int, y: Int, r: Short, g: Short, b: Short): Unit = {
-    setRed(x, y, r)
-    setGreen(x, y, g)
-    setBlue(x, y, b)
+    redBand(y)(x) = r
+    greenBand(y)(x) = g
+    blueBand(y)(x) = b
   }
-
-  def setRed(x: Int, y: Int, r: Short): Unit = redBand(y)(x) = r
-
-  def setGreen(x: Int, y: Int, g: Short): Unit = greenBand(y)(x) = g
-
-  def setBlue(x: Int, y: Int, b: Short): Unit = blueBand(y)(x) = b
 
   def averageColor(): RgbColor = {
     val sumRed: Int = redBand.par.map((row) => row.foldRight[Int](0)(_ + _)).fold(0)(_ + _)
@@ -35,6 +29,18 @@ class Image(width: Int, height: Int) {
     val blue: Short = (sumBlue.asInstanceOf[Double] / pixels).asInstanceOf[Short]
     RgbColor(red, green, blue)
   }
+
+  def colorOccurrences(): List[(RgbColor, Int)] = {
+    val map = new scala.collection.mutable.ListMap[RgbColor, Int]
+    for (y <- 0 until height; x <- 0 until width) {
+      val color = get(x, y)
+      map put(color, map.getOrElse(color, 0) + 1)
+    }
+    // sort by occurences
+    map.toList.sortBy(_._2)
+  }
+
+  def get(x: Int, y: Int): RgbColor = RgbColor(redBand(y)(x), greenBand(y)(x), blueBand(y)(x))
 }
 
 object Image {
@@ -53,7 +59,9 @@ object Image {
   }
 }
 
-case class RgbColor(red: Short, green: Short, blue: Short)
+case class RgbColor(red: Short, green: Short, blue: Short) {
+  // override def hashCode(): Int = red << 16 | green << 8 | blue
+}
 
 case class Point(x: Int, y: Int)
 

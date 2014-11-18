@@ -11,7 +11,8 @@ object Main {
 
   private val COMMAND_DIRECTORY = "-d"
   private val COMMAND_RENAME_RESOLUTION = "-n"
-  private val COMMAND_AVERAGE_COLOR = "-a"
+  private val COMMAND_COLOR_AVERAGE = "-a"
+  private val COMMAND_COLOR_POPULARITY = "-p"
 
   def main(args: Array[String]) {
     // TODO: rewrite the parsing to be more modular and use pattern matching
@@ -56,8 +57,10 @@ object Main {
           renameWithResolution(file)
         else
           println(s"$filename not renamed because already named well")
-      else if (command == COMMAND_AVERAGE_COLOR)
+      else if (command == COMMAND_COLOR_AVERAGE)
         println(s"Average color for $filename is (new method) " + Image.fromFile(file).averageColor())
+      else if (command == COMMAND_COLOR_POPULARITY)
+        println(s"Color list for $filename: " + Image.fromFile(file).colorOccurrences())
       else throw new IllegalArgumentException(command)
   }
 
@@ -77,6 +80,11 @@ object Main {
     println(s"From $filename to $newFilename")
   }
 
+  /**
+   * @deprecated
+   * @param file
+   * @return
+   */
   def averageColor(file: File): Color = {
     // TODO: implement abstraction for the Pixels for better use later on
     val image = ImageIO.read(file)
@@ -93,7 +101,7 @@ object Main {
 
   def printHelp(message: String) {
     if (message != null) println("Exception: " + message)
-    println("Usage: [" + COMMAND_DIRECTORY + "] (" + COMMAND_RENAME_RESOLUTION + "|" + COMMAND_AVERAGE_COLOR + ") (directoryName|fileName)")
+    println("Usage: [" + COMMAND_DIRECTORY + "] (" + COMMAND_RENAME_RESOLUTION + "|" + COMMAND_COLOR_AVERAGE + ") (directoryName|fileName)")
     println("Be aware that a filename cannot contain more than one .")
     println(COMMAND_DIRECTORY + " : apply operation to all image-files in the directory")
     println(COMMAND_RENAME_RESOLUTION + ", --rename-with-resolution : renames the picture to fit its resolution.")
