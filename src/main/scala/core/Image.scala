@@ -31,13 +31,13 @@ class Image(width: Int, height: Int) {
   }
 
   def colorOccurrences(): List[(RgbColor, Int)] = {
-    val map = new scala.collection.mutable.ListMap[RgbColor, Int]
+    val map = new scala.collection.mutable.HashMap[RgbColor, Int]
     for (y <- 0 until height; x <- 0 until width) {
-      val color = get(x, y)
+      val color: RgbColor = get(x, y)
       map put(color, map.getOrElse(color, 0) + 1)
     }
     // sort by occurences
-    map.toList.sortBy(_._2)
+    map.toList.sortWith((lhs, rhs) => lhs._2 > rhs._2).take(pixels / 1024)
   }
 
   def get(x: Int, y: Int): RgbColor = RgbColor(redBand(y)(x), greenBand(y)(x), blueBand(y)(x))
@@ -60,7 +60,9 @@ object Image {
 }
 
 case class RgbColor(red: Short, green: Short, blue: Short) {
-  // override def hashCode(): Int = red << 16 | green << 8 | blue
+  override def toString: String = f"$hashCode%06x"
+
+  override def hashCode(): Int = red << 16 | green << 8 | blue
 }
 
 case class Point(x: Int, y: Int)

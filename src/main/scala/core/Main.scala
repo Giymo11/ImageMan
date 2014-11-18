@@ -59,9 +59,10 @@ object Main {
           println(s"$filename not renamed because already named well")
       else if (command == COMMAND_COLOR_AVERAGE)
         println(s"Average color for $filename is (new method) " + Image.fromFile(file).averageColor())
-      else if (command == COMMAND_COLOR_POPULARITY)
-        println(s"Color list for $filename: " + Image.fromFile(file).colorOccurrences())
-      else throw new IllegalArgumentException(command)
+      else if (command == COMMAND_COLOR_POPULARITY) {
+        println(s"Color list for $filename: ")
+        Image.fromFile(file).colorOccurrences().foreach((x) => println(x._1 + " occurs " + x._2 + " times"))
+      } else throw new IllegalArgumentException(command)
   }
 
   def renameWithResolution(file: File) = {
@@ -82,8 +83,6 @@ object Main {
 
   /**
    * @deprecated
-   * @param file
-   * @return
    */
   def averageColor(file: File): Color = {
     // TODO: implement abstraction for the Pixels for better use later on
