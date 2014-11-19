@@ -63,8 +63,8 @@ object Image {
          x <- 0 until in.getWidth) {
       // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
       val colors = in.getRaster.getPixel(x, y, null.asInstanceOf[Array[Int]])
-      rgbColor = RgbColor(colors(0).asInstanceOf[Short], colors(1).asInstanceOf[Short], colors(2).asInstanceOf[Short])
-      image set(x, y, intArray2RgbColor(colors))
+      val rgbColor = RgbColor(colors(0).asInstanceOf[Short], colors(1).asInstanceOf[Short], colors(2).asInstanceOf[Short])
+      image set(x, y, rgbColor)
     }
     image
   }
