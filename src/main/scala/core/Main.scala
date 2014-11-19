@@ -15,8 +15,8 @@ object Main {
   private val COMMAND_COLOR_POPULARITY = "-p"
 
   def main(args: Array[String]) {
-    // TODO: rewrite the parsing to be more modular and use pattern matching
-    //try {
+    //TODO: rewrite the parsing to be more modular and use pattern matching
+    try {
       // minimum arguments
       if (args.length < 2) throw new IllegalAccessException
       if (args(0) == COMMAND_DIRECTORY) {
@@ -35,9 +35,9 @@ object Main {
         if (!file.exists() || file.isDirectory) throw new IllegalArgumentException
         handle(file, args(0))
       }
-    //} catch {
-    //  case e: Exception => printHelp(e.getMessage)
-    //}
+    } catch {
+      case e: IllegalArgumentException => printHelp(e.getMessage)
+    }
   }
 
   def handle(file: File, command: String) = {
@@ -60,8 +60,8 @@ object Main {
       else if (command == COMMAND_COLOR_AVERAGE)
         println(s"Average color for $filename is (new method) " + Image.fromFile(file).averageColor())
       else if (command == COMMAND_COLOR_POPULARITY) {
-        println(s"Color list for $filename: ")
-        Image.fromFile(file).colorOccurrences().foreach((x) => println(x._1 + " occurs " + x._2 + " times"))
+        println(s"Medium Brightness color list for $filename: ")
+        Image.fromFile(file).colorOccurrences(16).filter(_._1.luma() > 63).filter(_._1.luma() < 192).take(20).foreach((x) => println(x._1 + " occurs " + x._2 + " times (Luma: " + x._1.luma() + ")"))
       } else throw new IllegalArgumentException(command)
   }
 
@@ -81,6 +81,14 @@ object Main {
     println(s"From $filename to $newFilename")
   }
 
+  def printHelp(message: String) {
+    if (message != null) println("Exception: " + message)
+    println("Usage: [" + COMMAND_DIRECTORY + "] (" + COMMAND_RENAME_RESOLUTION + "|" + COMMAND_COLOR_AVERAGE + ") (directoryName|fileName)")
+    println("Be aware that a filename cannot contain more than one .")
+    println(COMMAND_DIRECTORY + " : apply operation to all image-files in the directory")
+    println(COMMAND_RENAME_RESOLUTION + ", --rename-with-resolution : renames the picture to fit its resolution.")
+  }
+
   /**
    * @deprecated
    */
@@ -96,13 +104,5 @@ object Main {
     val meanSum = colorList.par.fold(Array[Int](0, 0, 0))((lhs: Array[Int], rhs: Array[Int]) => Array[Int](lhs(0) + rhs(0), lhs(1) + rhs(1), lhs(2) + rhs(2)))
     // calculate the average
     new Color(meanSum(0) / pixelAmount, meanSum(1) / pixelAmount, meanSum(2) / pixelAmount)
-  }
-
-  def printHelp(message: String) {
-    if (message != null) println("Exception: " + message)
-    println("Usage: [" + COMMAND_DIRECTORY + "] (" + COMMAND_RENAME_RESOLUTION + "|" + COMMAND_COLOR_AVERAGE + ") (directoryName|fileName)")
-    println("Be aware that a filename cannot contain more than one .")
-    println(COMMAND_DIRECTORY + " : apply operation to all image-files in the directory")
-    println(COMMAND_RENAME_RESOLUTION + ", --rename-with-resolution : renames the picture to fit its resolution.")
   }
 }
