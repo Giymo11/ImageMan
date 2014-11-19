@@ -1,6 +1,5 @@
 package core
 
-import java.awt.Color
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -87,22 +86,5 @@ object Main {
     println("Be aware that a filename cannot contain more than one .")
     println(COMMAND_DIRECTORY + " : apply operation to all image-files in the directory")
     println(COMMAND_RENAME_RESOLUTION + ", --rename-with-resolution : renames the picture to fit its resolution.")
-  }
-
-  /**
-   * @deprecated
-   */
-  def averageColor(file: File): Color = {
-    // TODO: implement abstraction for the Pixels for better use later on
-    val image = ImageIO.read(file)
-    val raster = image.getRaster
-    val pixelAmount = image.getHeight * image.getWidth - 1
-    // println(file.getName + " has " + pixelAmount + " Pixel, Resolution: " + pixelAmount % image.getWidth + "x" + pixelAmount / image.getWidth)
-    // get a Seq of Array[Int] with size 3 containing the int value of red, green, blue in this order.
-    val colorList = for (i <- 0 to pixelAmount) yield raster.getPixel(i % image.getWidth, i / image.getWidth, null.asInstanceOf[Array[Int]])
-    // sum them all up
-    val meanSum = colorList.par.fold(Array[Int](0, 0, 0))((lhs: Array[Int], rhs: Array[Int]) => Array[Int](lhs(0) + rhs(0), lhs(1) + rhs(1), lhs(2) + rhs(2)))
-    // calculate the average
-    new Color(meanSum(0) / pixelAmount, meanSum(1) / pixelAmount, meanSum(2) / pixelAmount)
   }
 }
